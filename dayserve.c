@@ -26,7 +26,14 @@ void main () {
 
 
     /* getting a text host name */
+    char hostname[1025];
+    hostname[1024] = '\0';
 
+    gethostname(hostname, 1024);
+    printf("hostname is %s\n", hostname);
+    struct hostent* h;
+    h = gethostbyname(hostname);
+    printf("h_name: %s\n", h->h_name);
 
 
     /* create socket */
