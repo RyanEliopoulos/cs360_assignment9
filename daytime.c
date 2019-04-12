@@ -3,7 +3,7 @@
  *  CS 360, assignment 9 client
  */
 
-#define MY_PORT_NUMBER 49999
+#define MY_PORT_NUMBER 48889
 #include<sys/types.h>
 #include<sys/socket.h>
 #include<netinet/in.h>
@@ -59,10 +59,20 @@ void main () {
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons(MY_PORT_NUMBER);
 
+    hostEntry = gethostbyname("localhost");
+    // standin for testing with herror
+    //
+    pptr = (struct in_addr **) hostEntry->h_addr_list;
+    memcpy(&servAddr.sin_addr, *pptr, sizeof(struct in_addr));
 
+    
+
+    // commenting this out. Testing gethostbyname rather than giving the ip address
+    /*
     if (inet_pton(AF_INET, "127.0.0.1", &servAddr.sin_addr)<=0) {
         printf("inet_pton error\n");
     }
+    */
 
     if (connect(socketfd, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0) {
         printf("Error: connection failed\n");
@@ -70,4 +80,9 @@ void main () {
     else {
         printf("connection established\n");
     }
+    printf("hello!!!!!!\n");
+    char response[300] = {'\0'};
+    read(socketfd, response, 15);
+    printf("response: %s\n", response);
+    close(socketfd);
 }
