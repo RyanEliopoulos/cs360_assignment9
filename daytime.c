@@ -3,7 +3,7 @@
  *  CS 360, assignment 9 client
  */
 
-#define MY_PORT_NUMBER 48889
+#define MY_PORT_NUMBER 49999
 #include<sys/types.h>
 #include<sys/socket.h>
 #include<netinet/in.h>
@@ -18,7 +18,7 @@
 
 
 
-void main () {
+int main (int argc, char* argv[]) {
 
 
     /*
@@ -54,35 +54,43 @@ void main () {
     struct sockaddr_in servAddr;
     struct hostent* hostEntry;
     struct in_addr **pptr;
-
+    //printf("here 1\n");
     memset( &servAddr, 0, sizeof(servAddr));
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons(MY_PORT_NUMBER);
+    //printf("here 1.5\n");
 
-    hostEntry = gethostbyname("localhost");
-    // standin for testing with herror
-    //
-    pptr = (struct in_addr **) hostEntry->h_addr_list;
-    memcpy(&servAddr.sin_addr, *pptr, sizeof(struct in_addr));
-
+   
+    /* first attempt to get server address using hostname */  
+    if ( (hostEntry = gethostbyname(argv[1])) == NULL) {
+        herror("invalid host name..attempting to use arg as IP address\n");
+        /* now see if the arg is in dot notation */
+        if (inet_pton(AF_INET, argv[1], &servAddr.sin_addr)<=0) {
+            printf("both hostname and IP address failed\n");
+            memset( &servAddr, 0, sizeof(servAddr));
+            close(socketfd);
+            exit(1);
+        }
+    }
+    else {
+        printf("hostname was fine\n");
+        /* hostname sucess..copy data to appropriate structure */
+        pptr = (struct in_addr **) hostEntry->h_addr_list;
+        memcpy(&servAddr.sin_addr, *pptr, sizeof(struct in_addr));
+    }
     
 
+    //printf("here 2\n");
     // commenting this out. Testing gethostbyname rather than giving the ip address
-    /*
-    if (inet_pton(AF_INET, "127.0.0.1", &servAddr.sin_addr)<=0) {
-        printf("inet_pton error\n");
-    }
-    */
-
     if (connect(socketfd, (struct sockaddr *)&servAddr, sizeof(servAddr)) < 0) {
         printf("Error: connection failed\n");
     }
     else {
         printf("connection established\n");
     }
-    printf("hello!!!!!!\n");
+    //printf("hello!!!!!!\n");
     char response[300] = {'\0'};
-    read(socketfd, response, 15);
-    printf("response: %s\n", response);
+    read(socketfd, response, 299);
+    printf("%s\n", response);
     close(socketfd);
 }
